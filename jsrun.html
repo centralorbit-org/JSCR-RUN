@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Code Runner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        #editor {
+            border: 1px solid #444;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        #console {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        #runButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        #runButton:hover {
+            background-color: #45a049;
+        }
+        .links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .links a {
+            color: #1e90ff;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JavaScript Code Runner</h1>
+        <textarea id="codeInput">console.log("Hello, World!");</textarea>
+        <button id="runButton">Run Code</button>
+        <div id="console"></div>
+        <div class="links">
+            <p>Created by CentralOrbit-org</p>
+            <a href="https://github.com/CentralOrbit-org" target="_blank">GitHub</a>
+            <a href="https://youtube.com/@speedy0RB1T" target="_blank">YouTube (@speedy0RB1T)</a>
+            <a href="https://youtube.com/@centralorbit.org" target="_blank">YouTube (@centralorbit.org)</a>
+        </div>
+    </div>
+
+    <script>
+        // Initialize CodeMirror
+        const editor = CodeMirror.fromTextArea(document.getElementById('codeInput'), {
+            lineNumbers: true,
+            mode: 'javascript',
+            theme: 'default',
+            tabSize: 2
+        });
+
+        // Get DOM elements
+        const runButton = document.getElementById('runButton');
+        const consoleOutput = document.getElementById('console');
+
+        // Override console.log to capture output
+        const originalConsoleLog = console.log;
+        let consoleMessages = [];
+        console.log = function (...args) {
+            consoleMessages.push(args.map(arg => String(arg)).join(' '));
+            updateConsole();
+            originalConsoleLog.apply(console, args);
+        };
+
+        // Function to update console display
+        function updateConsole() {
+            consoleOutput.innerHTML = consoleMessages.join('\n');
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Run button click handler
+        runButton.addEventListener('click', () => {
+            consoleMessages = [];
+            consoleOutput.innerHTML = '';
+            const code = editor.getValue();
+            try {
+                // Use eval in a safe way
+                new Function(code)();
+                // Animate console appearance
+                gsap.fromTo(
+                    consoleOutput,
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }
+                );
+            } catch (error) {
+                consoleMessages.push('Error: ' + error.message);
+                updateConsole();
+                // Animate error appearance
+                gsap.fromTo(
+                    consoleOutput,
+                    { backgroundColor: '#ff4444' },
+                    { backgroundColor: '#2d2d2d', duration: 0.5, ease: 'power2.out' }
+                );
+            }
+        });
+
+        // Animate button on hover
+        runButton.addEventListener('mouseenter', () => {
+            gsap.to(runButton, { scale: 1.1, duration: 0.2, ease: 'power2.out' });
+        });
+        runButton.addEventListener('mouseleave', () => {
+            gsap.to(runButton, { scale: 1, duration: 0.2, ease: 'power2.out' });
+        });
+
+        // Initial animation for container
+        gsap.from('.container', {
+            opacity: 0,
+            y: 50,
+            duration: 1,
+            ease: 'power2.out'
+        });
+    </script>
+</body>
+</html>
